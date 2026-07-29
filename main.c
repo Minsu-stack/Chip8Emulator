@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <SDL.h>
+#include "chip8.h"
+#include "stack.h"
 
 int main(int argc, char* argv[]) {
+
+    initialize(&chip8.stack);
 
     /* 1. Initialize SDL Video Subsystem */
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -14,10 +18,12 @@ int main(int argc, char* argv[]) {
         "My First SDL Window",      /* Window title */
         SDL_WINDOWPOS_CENTERED,     /* X position */
         SDL_WINDOWPOS_CENTERED,     /* Y position */
-        800,                        /* Width in pixels */
-        600,                        /* Height in pixels */
+        640,                        /* Width in pixels */
+        320,                        /* Height in pixels */
         SDL_WINDOW_SHOWN            /* Flags */
     );
+
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     if (window == NULL) {
         printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
@@ -29,25 +35,49 @@ int main(int argc, char* argv[]) {
     int running = 1;
     SDL_Event event;
 
-    /* 4. The "Game Loop" */
+    const Uint32 frame_ms = 1000 / 60;  // 16 ms
+
+    int x = 0;
+
     while (running) {
+        Uint32 frame_start = SDL_GetTicks();
 
-        /* Check the event queue for new events */
+
         while (SDL_PollEvent(&event)) {
-
-            /* If the user clicks the 'X' button on the window */
             if (event.type == SDL_QUIT) {
-                running = 0; /* Breaks the loop */
+                running = 0;
             }
         }
 
-        /*
-         * Future code: This is where you will clear the screen,
-         * draw your graphics, and update the display.
-         */
+        // Update game state and render here
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-        /* Give the CPU a tiny break (~60 frames per second) */
-        SDL_Delay(16);
+        for (int i = 0; i < 64; i++)
+        {
+            for (int j = 0; j < 32; j++)
+            {
+                if (chip8.display[i][j] == true)
+                {
+                    SDL_Rect rect;
+                    rect.x = i * 10;   // X-coordinate of top-left corner
+                    rect.y = j * 10;   // Y-coordinate of top-left corner
+                    rect.w = 10;  // Width in pixels
+                    rect.h = 10;  // Height in pixels
+                    SDL_RenderFillRect(renderer, &rect);
+
+                }
+
+            }
+        }
+        SDL_RenderPresent(renderer);
+
+        Uint32 elapsed = SDL_GetTicks() - frame_start;
+
+        if (elapsed < frame_ms) {
+            SDL_Delay(frame_ms - elapsed);
+        }
     }
 
     /* 5. Clean up memory and exit */

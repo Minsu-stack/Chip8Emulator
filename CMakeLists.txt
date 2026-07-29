@@ -13,7 +13,13 @@ include_directories(${SDL2_DIR}/include/SDL2)
 # Tell CMake where to find the pre-compiled libraries
 link_directories(${SDL2_DIR}/lib)
 
-add_executable(Chip8Emulator main.c)
+add_executable(Chip8Emulator main.c
+        chip8.h
+        chip8.c
+        font.h
+        font.c
+        stack.c
+        stack.h)
 
 # Link the executable against MinGW and SDL2
 target_link_libraries(Chip8Emulator mingw32 SDL2main SDL2)
